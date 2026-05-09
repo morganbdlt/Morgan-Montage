@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Monteur Video | Morgan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; transition: background .4s ease, color .4s ease; }
+        .font-header { font-family: 'Oswald', sans-serif; }
+
+        .section-content { display: none; opacity: 0; transition: opacity .3s ease; }
+        .section-content.active { display: block; opacity: 1; }
+
+        .theme-presentation { color: #fff; position: relative; }
+        .theme-presentation::before {
+            content: "";
+            position: fixed;
+            inset: -12px;
+            background:
+                linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.74)),
+                url("https://drive.google.com/thumbnail?id=18-cK8LrKAwDMe8OiNwnAXpLM2_IukVF-&sz=w1920") center/cover no-repeat;
+            filter: blur(4px);
+            z-index: -1;
+        }
+        .theme-youtube { background: #0f0f0f; color: #fff; }
+        .theme-tiktok {
+            background: radial-gradient(circle at top right, #2c1130, #120716 40%, #000 100%);
+            color: #fff;
+        }
+        .theme-entreprise { background: linear-gradient(180deg, #d1d5db 0%, #cbd5e1 100%); color: #0f172a; }
+
+        .video-card { transition: transform .2s ease; cursor: pointer; }
+        .video-card:hover { transform: scale(1.02); }
+
+        #mobileMenu { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+        #mobileMenu.open { max-height: 320px; }
+
+        .pencil-underline { position: relative; display: inline-block; }
+        .pencil-underline svg { position: absolute; left: 0; bottom: -7px; width: 100%; height: 14px; }
+        .pencil-path { fill: none; stroke: #feee72; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 200; stroke-dashoffset: 200; animation: drawLine 1.1s ease-out forwards; }
+        @keyframes drawLine { to { stroke-dashoffset: 0; } }
+
+        .glow-frame {
+            box-shadow: 0 0 0 1px rgba(254, 238, 114, .45), 0 0 28px rgba(254, 238, 114, .3);
+            border: 1px solid rgba(254, 238, 114, .55);
+        }
+
+        #videoModal {
+            display: none; position: fixed; inset: 0; z-index: 120;
+            background: rgba(0,0,0,.88); align-items: center; justify-content: center; padding: 1.5rem;
+        }
+        #videoModal.open { display: flex; }
+        .video-modal-box {
+            width: 70vw; height: 60vh; max-width: 100%;
+            background: #000; border-radius: 1rem; overflow: hidden; position: relative;
+            border: 1px solid rgba(255,255,255,.15); box-shadow: 0 25px 50px rgba(0,0,0,.5);
+        }
+        .video-modal-box video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+        .close-btn {
+            position: absolute; top: 1rem; right: 1rem; width: 2.5rem; height: 2.5rem;
+            border-radius: 999px; border: 0; background: rgba(0,0,0,.6); color: #fff;
+            display: flex; align-items: center; justify-content: center; z-index: 3;
+        }
+
+        #ecmaModal, #angeModal, #dmoModal {
+            display: none; position: fixed; inset: 0; z-index: 110;
+            background: rgba(0,0,0,.84); align-items: center; justify-content: center;
+            padding: 2rem; overflow-y: auto;
+        }
+        #ecmaModal.open, #angeModal.open, #dmoModal.open { display: flex; }
+        .project-modal-box {
+            width: 100%; max-width: 940px; max-height: 90vh; overflow-y: auto;
+            background: #f8fafc; border-radius: 1rem; padding: 1.5rem; position: relative;
+        }
+        .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem; margin-top: 1rem; }
+        .project-video {
+            background: #e2e8f0; border-radius: .75rem; overflow: hidden; cursor: pointer;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .project-video:hover { transform: scale(1.02); box-shadow: 0 12px 24px rgba(15,23,42,.15); }
+        .project-video video, .project-video img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+        .project-video p { margin: 0; padding: .5rem; text-align: center; font-size: .8rem; font-weight: 700; color: #0f172a; }
+        @media (max-width: 768px) { .project-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body class="theme-presentation min-h-screen flex flex-col">
+    <nav id="mainNav" class="sticky top-0 z-50 border-b border-white/10 backdrop-blur-md bg-black/35 px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="font-header text-2xl font-bold tracking-wider">
+                <span id="logo-name">Morgan</span>
+                <span id="logo-montage" class="ml-1" style="color:#feee72;">Montage</span>
+            </div>
+            <div class="hidden md:flex gap-2 bg-black/20 p-1 rounded-full">
+                <button id="btn-presentation" class="nav-btn px-5 py-2 rounded-full text-sm bg-white text-black" onclick="switchTab('presentation')">Presentation</button>
+                <button id="btn-youtube" class="nav-btn px-5 py-2 rounded-full text-sm text-gray-300" onclick="switchTab('youtube')">YouTube</button>
+                <button id="btn-tiktok" class="nav-btn px-5 py-2 rounded-full text-sm text-gray-300" onclick="switchTab('tiktok')">TikTok</button>
+                <button id="btn-entreprise" class="nav-btn px-5 py-2 rounded-full text-sm text-gray-300" onclick="switchTab('entreprise')">Entreprise</button>
+            </div>
+            <button class="md:hidden text-white" onclick="toggleMobileMenu()" aria-label="Menu mobile"><i data-lucide="menu"></i></button>
+        </div>
+        <div id="mobileMenu" class="md:hidden mt-4">
+            <div class="flex flex-col gap-2 bg-black/35 p-3 rounded-xl">
+                <button class="text-left text-white" onclick="switchTab('presentation');closeMobileMenu();">Presentation</button>
+                <button class="text-left text-white" onclick="switchTab('youtube');closeMobileMenu();">YouTube</button>
+                <button class="text-left text-white" onclick="switchTab('tiktok');closeMobileMenu();">TikTok</button>
+                <button class="text-left text-white" onclick="switchTab('entreprise');closeMobileMenu();">Entreprise</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <section id="section-presentation" class="section-content active">
+            <div class="grid md:grid-cols-2 gap-10 items-center min-h-[68vh]">
+                <div>
+                    <div class="inline-block px-3 py-1 border border-white/30 rounded-full text-xs uppercase tracking-widest text-gray-300 mb-4">Monteur Video Freelance</div>
+                    <h1 class="font-header text-4xl md:text-6xl leading-tight mb-5">
+                        <span style="color:#feee72;">Ensemble :</span><br>
+                        on cree une video qui vous
+                        <span class="pencil-underline">ressemble<svg viewBox="0 0 100 10" preserveAspectRatio="none"><path class="pencil-path" d="M0,5 Q50,8 100,5"></path></svg></span>.
+                    </h1>
+                    <p class="text-gray-200 leading-relaxed mb-6">
+                        Heureux de vous presenter mon travail. Je suis Morgan, 20 ans, base a Rennes. Je consomme tout type de contenu audiovisuel depuis pres de 10 ans : documentaires, films, series, videos, pubs. Maintenant mon role est de guider le spectateur la ou vous le souhaitez. J'adapte le rythme et le style a votre objectif.
+                    </p>
+                </div>
+
+                <div class="rounded-xl overflow-hidden glow-frame">
+                    <!-- VIDEO PRESENTATION (Poster Clickable -> Iframe) -->
+                    <div class="w-full h-96 relative group cursor-pointer" onclick="this.innerHTML='<iframe class=\'w-full h-full\' src=\'https://drive.google.com/file/d/1alFGtYpMV6nG0uPMXXgEBzW2c_Crfcss/preview?autoplay=1\' allow=\'autoplay; fullscreen\' allowfullscreen></iframe>';">
+                        <img src="https://drive.google.com/thumbnail?id=11ZYFK5FEZoTX5fl6Lb9J-EzMEjRCS8Bq&sz=w1200" alt="Miniature Présentation" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition">
+                            <i data-lucide="play-circle" class="w-20 h-20 text-white opacity-90 group-hover:scale-110 transition drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mt-8 border-t border-white/15 pt-7">
+                <div class="text-center"><i data-lucide="clapperboard" class="mx-auto mb-2 text-yellow-300"></i><h3 class="text-2xl font-bold">+100</h3><p class="text-sm text-gray-300">Projets</p></div>
+                <div class="text-center"><i data-lucide="clock-3" class="mx-auto mb-2 text-yellow-300"></i><h3 class="text-2xl font-bold">36h</h3><p class="text-sm text-gray-300">Reponse moyenne</p></div>
+                <div class="text-center"><i data-lucide="sparkles" class="mx-auto mb-2 text-yellow-300"></i><h3 class="text-2xl font-bold">Premiere</h3><p class="text-sm text-gray-300">Suite Adobe</p></div>
+                <div class="text-center"><i data-lucide="wand-2" class="mx-auto mb-2 text-yellow-300"></i><h3 class="text-2xl font-bold">After</h3><p class="text-sm text-gray-300">Motion design</p></div>
+            </div>
+
+            <div class="max-w-5xl mx-auto mt-14 bg-black/40 border border-white/15 rounded-2xl p-6 md:p-8 backdrop-blur-sm">
+                <div class="grid md:grid-cols-5 gap-8">
+                    <div class="md:col-span-2">
+                        <h4 class="text-sm uppercase tracking-widest text-gray-300 mb-3 border-b border-white/20 pb-2">Reseaux</h4>
+                        <div class="space-y-3 text-sm">
+                            <a href="https://www.youtube.com/@wice8267" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-red-400">
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+                                YouTube
+                            </a>
+                            <a href="https://www.tiktok.com/@morgan_montage" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-pink-400">
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="18" r="4"/><path d="M12 18V2l7 4"/></svg>
+                                TikTok
+                            </a>
+                            <a href="https://x.com/Wiceftn" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-sky-400">
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+                                Twitter
+                            </a>
+                        </div>
+
+                        <h4 class="text-sm uppercase tracking-widest text-gray-300 mt-8 mb-3 border-b border-white/20 pb-2">Contact</h4>
+                        <div class="space-y-3 text-sm">
+                            <a href="https://bit.ly/3QnbqRk" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-emerald-400"><i data-lucide="shopping-bag" class="w-4 h-4"></i> Fiverr</a>
+                            <a href="https://wa.me/33668900315" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 hover:text-green-400"><i data-lucide="phone" class="w-4 h-4"></i> WhatsApp Business</a>
+                        </div>
+
+                        <h4 class="text-sm uppercase tracking-widest text-gray-300 mt-8 mb-3 border-b border-white/20 pb-2">Pour en savoir plus</h4>
+                        <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-sm hover:text-yellow-300"><i data-lucide="folder" class="w-4 h-4"></i> Mon Google Drive</a>
+                    </div>
+
+                    <form action="https://formspree.io/f/xwvnbyzy" method="POST" class="md:col-span-3 space-y-4">
+                        <h3 class="font-header text-3xl mb-2">Parlons de votre projet</h3>
+                        <p class="text-sm text-gray-300 mb-3">Ce formulaire me permet de repondre plus vite.</p>
+
+                        <div class="text-sm font-semibold text-yellow-300 mt-2">- Le Projet</div>
+                        <input type="text" name="nom_projet" required placeholder="Nom du projet" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+                        <textarea name="description_courte" required rows="2" placeholder="Description courte" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white"></textarea>
+
+                        <div class="text-sm font-semibold text-yellow-300 mt-2">- Cible & Format</div>
+                        <select name="plateforme" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+                            <option value="TikTok / Reels / Shorts" class="bg-black">TikTok / Reels / Shorts</option>
+                            <option value="YouTube" class="bg-black">YouTube</option>
+                            <option value="Entreprise" class="bg-black">Entreprise</option>
+                        </select>
+                        <input type="text" name="audience" placeholder="Audience (Qui regarde ?)" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+
+                        <div class="text-sm font-semibold text-yellow-300 mt-2">- Volume</div>
+                        <input type="number" name="nombre_videos" min="1" placeholder="Nombre de videos" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+                        <select name="frequence" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+                            <option value="Par semaine" class="bg-black">Par semaine</option>
+                            <option value="Par mois" class="bg-black">Par mois</option>
+                            <option value="Une seule fois" class="bg-black">Une seule fois</option>
+                        </select>
+
+                        <div class="text-sm font-semibold text-yellow-300 mt-2">- Budget & Style</div>
+                        <input type="text" name="budget" placeholder="Budget estime (€)" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+                        <input type="url" name="lien_exemple" placeholder="Lien d'exemple (facultatif)" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+
+                        <input type="email" name="email" required placeholder="Votre email pour reponse" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white">
+                        <button type="submit" class="w-full bg-[#feee72] text-black font-bold py-3 rounded-lg hover:bg-yellow-300 transition">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-youtube" class="section-content">
+            <div class="w-full h-36 md:h-64 rounded-xl overflow-hidden border border-white/10 mb-6 relative group">
+                <img src="https://drive.google.com/thumbnail?id=12zVoqPD56AJpJSianqyZ9NjFbjC27VV7&sz=w1920" alt="Banniere YouTube" class="w-full h-full object-cover opacity-70 group-hover:scale-105 transition duration-700" loading="lazy">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-6">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 md:w-24 md:h-24 rounded-full border-4 border-black/40 bg-black/40 overflow-hidden">
+                            <img src="https://drive.google.com/thumbnail?id=1Uce-PQ85KX1zCSGf3ioQ36VMn0TwZVMS&sz=w400" alt="Logo Morgan Montage" class="w-full h-full object-cover">
+                        </div>
+                        <div><h2 class="text-xl md:text-3xl font-bold text-white">Morgan <span style="color:#ff0000;">Montage</span></h2><p class="text-zinc-300 text-sm md:text-base">100+ projets realises</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION YOUTUBE (Google Drive Preview & Thumbnails) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Promo 8.3 -->
+                <div class="video-card group" onclick="openVideo('https://drive.google.com/file/d/1O08iB6ID7O28YwnujQffGyZcuX1n0Kt6/preview')">
+                    <div class="aspect-video rounded-xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=1O08iB6ID7O28YwnujQffGyZcuX1n0Kt6&sz=w720" alt="Promo 8.3" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg text-white mt-3">Spitch</h3>
+                    <p class="text-xs text-gray-400 mt-1 italic">(Courte impactante)</p>
+                </div>
+
+                <!-- Feeat and Fun -->
+                <div class="video-card group" onclick="openVideo('https://drive.google.com/file/d/1kvOMi8Cdm8i79XFQ4C82yZym4NwRWF_i/preview')">
+                    <div class="aspect-video rounded-xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=1kvOMi8Cdm8i79XFQ4C82yZym4NwRWF_i&sz=w720" alt="Feeat and Fun" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg text-white mt-3">Pattafix ON ECHANGE NOS TELEPHONES...</h3>
+                    <p class="text-xs text-gray-400 mt-1 italic">(feat and fun)</p>
+                </div>
+
+                <!-- Podcast -->
+                <div class="video-card group" onclick="openVideo('https://drive.google.com/file/d/18XwoFMJIAVXMiDABI1an4cEbS8gN0VzK/preview')">
+                    <div class="aspect-video rounded-xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=18XwoFMJIAVXMiDABI1an4cEbS8gN0VzK&sz=w720" alt="Podcast" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg text-white mt-3">Podcast</h3>
+                    <p class="text-xs text-gray-400 mt-1 italic">(Longue mais rythme)</p>
+                </div>
+
+                <!-- Gaming Meyrou -->
+                <div class="video-card group" onclick="openVideo('https://drive.google.com/file/d/1ndEEzCoYo3ZU38K6-KKb8EqN8pKWuTfk/preview')">
+                    <div class="aspect-video rounded-xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=1ndEEzCoYo3ZU38K6-KKb8EqN8pKWuTfk&sz=w720" alt="Gaming Meyrou" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg text-white mt-3">Gaming</h3>
+                    <p class="text-xs text-gray-400 mt-1 italic">(Dynamique)</p>
+                </div>
+
+                <!-- Histoire Rallye -->
+                <div class="video-card group" onclick="openVideo('https://drive.google.com/file/d/1CBDD54B69Ra5tkLmO8IqKIm8qIfxtsEt/preview')">
+                    <div class="aspect-video rounded-xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=1CBDD54B69Ra5tkLmO8IqKIm8qIfxtsEt&sz=w720" alt="Histoire Rallye" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg text-white mt-3">Yoking Histoire</h3>
+                    <p class="text-xs text-gray-400 mt-1 italic">(storytelling)</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-tiktok" class="section-content">
+            <div class="text-center mb-10">
+                <h2 class="font-header text-4xl md:text-5xl font-bold italic bg-gradient-to-r from-cyan-300 via-pink-500 to-fuchsia-500 bg-clip-text text-transparent">Shorts & TikTok</h2>
+            </div>
+            
+            <!-- SECTION TIKTOK -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 justify-items-center max-w-5xl mx-auto">
+                <div class="video-card w-full group" onclick="openVideo('https://drive.google.com/file/d/1V4FE4nlA87J081YSOlAusigJXAaMSBv2/preview')">
+                    <div class="aspect-[9/16] rounded-2xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=1V4FE4nlA87J081YSOlAusigJXAaMSBv2&sz=w720" alt="Idobetech" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-white mt-3 text-center">Idobetech</h3>
+                    <p class="text-xs text-gray-300 mt-1 italic text-center">(Pub no cam)</p>
+                </div>
+                
+                <div class="video-card w-full group" onclick="openVideo('https://drive.google.com/file/d/18_nB-jNSmq8Dl8bZvPpHeF9QhR_oIglN/preview')">
+                    <div class="aspect-[9/16] rounded-2xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=18_nB-jNSmq8Dl8bZvPpHeF9QhR_oIglN&sz=w720" alt="Morphozer" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-white mt-3 text-center">Morphozer</h3>
+                    <p class="text-xs text-gray-300 mt-1 italic text-center">(Presentation cam)</p>
+                </div>
+                
+                <div class="video-card w-full group" onclick="openVideo('https://drive.google.com/file/d/1rsujRCuOpaLIPb_l1X0rAcn1VOpiE-Hc/preview')">
+                    <div class="aspect-[9/16] rounded-2xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=1rsujRCuOpaLIPb_l1X0rAcn1VOpiE-Hc&sz=w720" alt="Nonn Basket" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-white mt-3 text-center">Nonn basket</h3>
+                    <p class="text-xs text-gray-300 mt-1 italic text-center">(Extrait d'une video)</p>
+                </div>
+                
+                <div class="video-card w-full group" onclick="openVideo('https://drive.google.com/file/d/1ayclUA_1MsKwK4QLA4rIMJxzLcvVnmKY/preview')">
+                    <div class="aspect-[9/16] rounded-2xl overflow-hidden border border-white/10 bg-black relative">
+                        <img class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" src="https://drive.google.com/thumbnail?id=1ayclUA_1MsKwK4QLA4rIMJxzLcvVnmKY&sz=w720" alt="Yoan" loading="lazy">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <i data-lucide="play" class="w-12 h-12 text-white/70 group-hover:text-white transition drop-shadow-md"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-white mt-3 text-center">Yoan</h3>
+                    <p class="text-xs text-gray-300 mt-1 italic text-center">(Face cam)</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-entreprise" class="section-content">
+            <div class="text-center mb-12"><h2 class="font-header text-5xl md:text-6xl font-bold tracking-tight"><span class="text-slate-500">Projets</span> <span class="text-slate-900">Corporate</span></h2></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <!-- ECMA -->
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-300 shadow-[0_18px_40px_rgba(15,23,42,0.12)] hover:shadow-[0_25px_55px_rgba(15,23,42,0.16)] transition-all duration-500 cursor-pointer group" onclick="openProjectModal('ecmaModal')">
+                    <div class="w-full h-48 rounded-2xl overflow-hidden bg-slate-100 mb-5"><img src="https://drive.google.com/thumbnail?id=1oF33LO1MGKiPSLn7lAmP7nvdq8t6fidX&sz=w800" alt="Salon de l'ECMA" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" loading="lazy"></div>
+                    <div class="flex items-center gap-2 mb-3"><span class="w-2 h-2 rounded-full bg-slate-900"></span><span class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500">Automobile</span></div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-3 font-header uppercase">Presentation du Salon de L'ECMA</h3>
+                    <p class="text-slate-600 leading-relaxed text-sm">Le projet consistait de faire une video par stand au salon de l'Ecma 2025 qui comptait 20 stands. Tout cela le plus rapidement possible pour devancer les gros medias traditionnels. Des videos simples, mais rythmees et efficaces pour presenter chaque nouvelle moto de chaque stand.</p>
+                    <div class="mt-4 text-slate-900 font-bold text-sm">Voir le projet</div>
+                </div>
+
+                <!-- Ange -->
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-300 shadow-[0_18px_40px_rgba(15,23,42,0.12)] hover:shadow-[0_25px_55px_rgba(15,23,42,0.16)] transition-all duration-500 cursor-pointer group" onclick="openProjectModal('angeModal')">
+                    <div class="w-full h-48 rounded-2xl overflow-hidden bg-slate-100 mb-5 p-4"><img src="https://drive.google.com/thumbnail?id=1LIWBB5MjhqOST4RamYyukSvS0JK0xWq4&sz=w800" alt="Les rencontres Digitales" class="w-full h-full object-contain" loading="lazy"></div>
+                    <div class="flex items-center gap-2 mb-3"><span class="w-2 h-2 rounded-full bg-slate-900"></span><span class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500">Evenementiel</span></div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-3 font-header uppercase">Les rencontres Digitales</h3>
+                    <p class="text-slate-600 leading-relaxed text-sm">J'ai fait en 2025 la promotion du salon des rencontres digitales de la franchise plus particulierement en cote d'ivoire. Ange Lonis a fait appel a mes services pour communiquer du salon via les reseaux et faire des videos de presentation. Cela s'est fait via plusieurs styles de video : presentation face cam, sptich et conference.</p>
+                    <div class="mt-4 text-slate-900 font-bold text-sm">Voir le projet</div>
+                </div>
+
+                <!-- DMO -->
+                <div class="bg-white p-6 rounded-[2rem] border border-slate-300 shadow-[0_18px_40px_rgba(15,23,42,0.12)] hover:shadow-[0_25px_55px_rgba(15,23,42,0.16)] transition-all duration-500 cursor-pointer group" onclick="openProjectModal('dmoModal')">
+                    <div class="w-full h-48 rounded-2xl overflow-hidden bg-slate-100 mb-5"><img src="https://drive.google.com/thumbnail?id=1Fq13J_zf7WCrt2_QQPQ0rJ09esUPlNfu&sz=w800" alt="L'Histoire de Dmo" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" loading="lazy"></div>
+                    <div class="flex items-center gap-2 mb-3"><span class="w-2 h-2 rounded-full bg-slate-900"></span><span class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500">Corporate</span></div>
+                    <h3 class="text-2xl font-bold text-slate-900 mb-3 font-header uppercase">L'Histoire de Dmo</h3>
+                    <p class="text-slate-600 leading-relaxed text-sm">Toutcomflo m'a contacte pour une collaboration pour retracer l'histoire de l'entreprise Dmo. Ici, l'objectif etait de reprendre le parcours entier des deux entrepreneurs derriere l'entreprise Dmo et comment ils ont reussi a avoir un tel succes. Entre archive et image manquante, le challenge etait de taille.</p>
+                    <div class="mt-4 text-slate-900 font-bold text-sm">Voir le projet</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="ecmaModal" role="dialog" aria-modal="true" aria-label="Projet ECMA">
+        <div class="project-modal-box">
+            <button class="close-btn" onclick="closeProjectModal('ecmaModal')" aria-label="Fermer"><i data-lucide="x"></i></button>
+            <h3 class="text-2xl font-bold text-slate-900 font-header">Presentation du Salon de L'ECMA</h3>
+            <p class="text-sm text-slate-500 mt-1">Cliquez sur une video pour la visionner.</p>
+            <div class="project-grid">
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1e16Cpp07-0ixLoIOk4C01HRYpbjtZGdq/preview','ecmaModal')"><img src="https://drive.google.com/thumbnail?id=1e16Cpp07-0ixLoIOk4C01HRYpbjtZGdq&sz=w720" alt="Zontes"><p>Zontes</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1T5RQx6qz8TctTPVBqW0oG-30cCU43ynd/preview','ecmaModal')"><img src="https://drive.google.com/thumbnail?id=1T5RQx6qz8TctTPVBqW0oG-30cCU43ynd&sz=w720" alt="Triumph"><p>Triumph</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1QvPRyVW9yFJWdForr8099N90TbMKzMkN/preview','ecmaModal')"><img src="https://drive.google.com/thumbnail?id=1QvPRyVW9yFJWdForr8099N90TbMKzMkN&sz=w720" alt="22 Benelli"><p>22 Benelli</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1rrkzJrvdNWiwOaHpupHwqtXuvVArBIxf/preview','ecmaModal')"><img src="https://drive.google.com/thumbnail?id=1rrkzJrvdNWiwOaHpupHwqtXuvVArBIxf&sz=w720" alt="Motomorini"><p>Motomorini</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1xkPXqgb0gZ-Ieu-AW9ngISGIHBK4zPJ5/preview','ecmaModal')"><img src="https://drive.google.com/thumbnail?id=1xkPXqgb0gZ-Ieu-AW9ngISGIHBK4zPJ5&sz=w720" alt="Honda"><p>Honda</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1_S_-S6UOp4OYgLuW9BFhjn3wtoQHMbzQ/preview','ecmaModal')"><img src="https://drive.google.com/thumbnail?id=1_S_-S6UOp4OYgLuW9BFhjn3wtoQHMbzQ&sz=w720" alt="Voge"><p>Voge</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="angeModal" role="dialog" aria-modal="true" aria-label="Projet Rencontres Digitales">
+        <div class="project-modal-box">
+            <button class="close-btn" onclick="closeProjectModal('angeModal')" aria-label="Fermer"><i data-lucide="x"></i></button>
+            <h3 class="text-2xl font-bold text-slate-900 font-header">Les rencontres Digitales</h3>
+            <p class="text-sm text-slate-500 mt-1">Cliquez sur une video pour la visionner.</p>
+            <div class="project-grid">
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1hKAO1IPupLm-BWrd4WGnGkzRmrAS-Z1I/preview','angeModal')"><img src="https://drive.google.com/thumbnail?id=1hKAO1IPupLm-BWrd4WGnGkzRmrAS-Z1I&sz=w720" alt="Presentation 1"><p>Presentation 1</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1miIJIfAIPN8hlgjQb_075oqVQI176u7M/preview','angeModal')"><img src="https://drive.google.com/thumbnail?id=1miIJIfAIPN8hlgjQb_075oqVQI176u7M&sz=w720" alt="Presentation 2"><p>Presentation 2</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1QhC_TdUfQc39nqGI2ViLCQ964uzwkx-E/preview','angeModal')"><img src="https://drive.google.com/thumbnail?id=1QhC_TdUfQc39nqGI2ViLCQ964uzwkx-E&sz=w720" alt="Presentation 3"><p>Presentation 3</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1VOHk_dRm1av7gAq6PMAvC53iwdeSOFpj/preview','angeModal')"><img src="https://drive.google.com/thumbnail?id=1VOHk_dRm1av7gAq6PMAvC53iwdeSOFpj&sz=w720" alt="Spitch"><p>Spitch</p></div>
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1ESMk6f71VrKXZGc7YoLbzUdVAejZ60c5/preview','angeModal')"><img src="https://drive.google.com/thumbnail?id=1ESMk6f71VrKXZGc7YoLbzUdVAejZ60c5&sz=w720" alt="Conference"><p>Conference</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dmoModal" role="dialog" aria-modal="true" aria-label="Projet DMO">
+        <div class="project-modal-box">
+            <button class="close-btn" onclick="closeProjectModal('dmoModal')" aria-label="Fermer"><i data-lucide="x"></i></button>
+            <h3 class="text-2xl font-bold text-slate-900 font-header">L'Histoire de Dmo</h3>
+            <p class="text-sm text-slate-500 mt-1">Cliquez pour visionner.</p>
+            <div class="project-grid">
+                <div class="project-video" onclick="openVideoFromProject('https://drive.google.com/file/d/1Du2iAiv0S3ZnWxVs-MRLnSgA-hLdhYXs/preview','dmoModal')"><img src="https://drive.google.com/thumbnail?id=1Du2iAiv0S3ZnWxVs-MRLnSgA-hLdhYXs&sz=w720" alt="Video DMO"><p>Video DMO</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="videoModal" role="dialog" aria-modal="true" aria-label="Lecture video">
+        <div class="video-modal-box">
+            <button class="close-btn" onclick="closeVideo()" aria-label="Fermer"><i data-lucide="x"></i></button>
+            <iframe id="mainVideoIframe" class="w-full h-full bg-black" src="" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        function switchTab(tabName) {
+            document.body.className = `theme-${tabName} min-h-screen flex flex-col`;
+            const logoMontage = document.getElementById('logo-montage');
+            logoMontage.style.color = '#feee72';
+            if (tabName === 'youtube') logoMontage.style.color = '#ff0000';
+            if (tabName === 'tiktok') logoMontage.style.color = '#a855f7';
+            if (tabName === 'entreprise') logoMontage.style.color = '#ffffff';
+            document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`section-${tabName}`).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => { btn.classList.remove('bg-white','text-black'); btn.classList.add('text-gray-300'); });
+            const activeBtn = document.getElementById(`btn-${tabName}`);
+            if (activeBtn) { activeBtn.classList.add('bg-white','text-black'); activeBtn.classList.remove('text-gray-300'); }
+        }
+        function toggleMobileMenu(){ document.getElementById('mobileMenu').classList.toggle('open'); }
+        function closeMobileMenu(){ document.getElementById('mobileMenu').classList.remove('open'); }
+        function openVideo(url){
+            const modal = document.getElementById('videoModal');
+            const iframe = document.getElementById('mainVideoIframe');
+            iframe.src = url;
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeVideo(){
+            const modal = document.getElementById('videoModal');
+            const iframe = document.getElementById('mainVideoIframe');
+            iframe.src = '';
+            modal.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+        function openProjectModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; lucide.createIcons(); }
+        function closeProjectModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow = 'auto'; }
+        function openVideoFromProject(videoPath, modalId){ closeProjectModal(modalId); openVideo(videoPath); }
+        document.getElementById('videoModal').addEventListener('click', e => { if (e.target.id === 'videoModal') closeVideo(); });
+        document.getElementById('ecmaModal').addEventListener('click', e => { if (e.target.id === 'ecmaModal') closeProjectModal('ecmaModal'); });
+        document.getElementById('angeModal').addEventListener('click', e => { if (e.target.id === 'angeModal') closeProjectModal('angeModal'); });
+        document.getElementById('dmoModal').addEventListener('click', e => { if (e.target.id === 'dmoModal') closeProjectModal('dmoModal'); });
+    </script>
+</body>
+</html>
